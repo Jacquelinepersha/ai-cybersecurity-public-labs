@@ -1,0 +1,44 @@
+# Raw datasets
+data/raw/*.csv
+data/raw/*.pcap
+data/raw/*.pcapng
+
+# Local MITRE data
+data/raw/enterprise-attack.json
+data/raw/stix-atlas.json
+
+# Secrets and credentials
+.env
+.env.*
+*.key
+*.pem
+secrets.*
+credentials.*
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+env/
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Testing / tooling
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Generated model artifacts
+results/*.joblib
+results/*.pkl
+results/*.pickle
+
+# macOS
+.DS_Store
+
+# Editors
+.vscode/
+.idea/
