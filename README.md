@@ -20,7 +20,7 @@ Each notebook runs in Google Colab or locally in Jupyter — the same file works
 pip install -r requirements.txt
 ```
 
-Place the official UNSW-NB15 prepared CSV files in `data/raw/`:
+Place the official UNSW-NB15 (https://research.unsw.edu.au/projects/unsw-nb15-dataset) prepared CSV files in `data/raw/`:
 
 ```
 data/raw/
