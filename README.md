@@ -1,6 +1,6 @@
 # AI Cybersecurity Public Labs
 
-Four hands-on labs applying machine learning to network threat detection, using the UNSW-NB15 dataset. Built to accompany the AI Cybersecurity Masterclass, and shared here as public, runnable evidence of the work   not just slides.
+The hands-on labs applying machine learning to network threat detection, using the UNSW-NB15 dataset. Built to accompany the AI Cybersecurity Masterclass, and shared here as public, runnable evidence of the work   not just slides.
 
 This is an independent educational project, not an accredited certification program.
 
