@@ -41,7 +41,7 @@ Then open any notebook in `notebooks/` and run it top to bottom.
 
 ```
 ai-cybersecurity-public-labs/
-├── notebooks/     # the 5 labs
+├── notebooks/     # the labs
 ├── src/           # reusable data loading, preprocessing, feature, modeling, and evaluation code
 ├── data/          # dataset instructions (raw data not included)
 ├── requirements.txt
