@@ -1,7 +1,9 @@
 """
-Shared code for Labs 01-05 of the AI Cybersecurity Masterclass.
+Shared code for the AI Cybersecurity Masterclass labs.
 
-Five modules, in the order the labs use them:
+Core modules (Labs 01-07). Later labs import their own helper modules
+(imbalance, thresholds, robustness, poisoning, drift, mitre_data, ...)
+directly, for example `from src.drift import domain_classifier_auc`:
 
     data_loader    load_unsw, load_feature_dictionary
     preprocessing  split_xy, align_columns, build_preprocessor
