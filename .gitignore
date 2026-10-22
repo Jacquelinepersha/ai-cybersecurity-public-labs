@@ -1,5 +1,6 @@
 # Raw datasets
 data/raw/*.csv
+!data/raw/UNSW_NB15_features.csv
 data/raw/*.pcap
 data/raw/*.pcapng
 
