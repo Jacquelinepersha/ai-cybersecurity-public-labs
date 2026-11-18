@@ -116,7 +116,7 @@ ai-cybersecurity-public-labs/
 
 ## Method
 
-Each lab follows the same structure: research question, method, results, and a short written interpretation, not just a final score. The core rules throughout:
+Each lab follows the same structure: a **Security foundation** section with the cybersecurity concepts the lab needs, then the research question, method, results, and a short written interpretation, and finally **From lab to SOC**, which connects the result to real security operations and ends with check questions. The core rules throughout:
 - evaluate precision, recall, and F1 alongside accuracy, since accuracy alone hides the failures that matter most in security data;
 - change one factor at a time against a named baseline;
 - repeat with several seeds, and only count an effect larger than the spread between runs;
