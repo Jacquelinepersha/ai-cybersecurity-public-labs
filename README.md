@@ -103,6 +103,8 @@ jupyter lab notebooks/
 
 The dataset loads automatically from `data/raw/` (see `data/README.md`).
 
+**On a Mac**, XGBoost (Labs 05 and later) also needs the OpenMP runtime, which macOS does not include. Install it once with [Homebrew](https://brew.sh): `brew install libomp`, then restart the Jupyter kernel. Colab needs nothing extra.
+
 ## Repository structure
 
 ```
