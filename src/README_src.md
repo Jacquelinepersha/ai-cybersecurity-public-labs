@@ -25,5 +25,7 @@
 | `redteam.py` | red-team cases with expected safe behavior, campaigns, regression across versions (Labs 27, 29) |
 | `ai_monitoring.py` | deployment replay, PSI and baseline signals, model registry and rollback (Lab 28) |
 | `ai_metrics.py` | metrics with baseline, threshold, owner, and decision; scorecards (Lab 29) |
+| `hunting.py` | realistic hunt windows, Isolation Forest baselines, precision at an analyst budget, cluster profiles (Lab 30) |
+| `live_llm.py` | optional OpenAI-compatible adapter that plugs a real LLM into the Unit 5 controls (Lab 31) |
 
 `xgboost` is only needed where a lab uses `xgboost_pipeline()`. Without it, that function raises a clear install message.
