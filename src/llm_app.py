@@ -246,11 +246,15 @@ def run_pipeline(
     task_tools=DEFAULT_TASK_TOOLS,
     log=None,
     case_id=None,
+    model=None,
 ):
     """
     Run one request through the assistant with the chosen controls.
 
     `retrieved` is a list of (doc_id, text, trusted) tuples.
+    `model` is anything with generate(user_request, segments) -> ModelOutput.
+    It defaults to the deterministic SimulatedModel; src.live_llm.LiveModel
+    plugs a real LLM into the same controls.
     Returns the final answer, the tool calls that executed, and the log.
     """
     log = log if log is not None else AuditLog()
@@ -267,7 +271,8 @@ def run_pipeline(
             continue
         segments.append(Segment(text, trusted or not controls.trust_separation, doc_id))
 
-    output = SimulatedModel(naive=True).generate(user_segment.text, segments)
+    model = model if model is not None else SimulatedModel(naive=True)
+    output = model.generate(user_segment.text, segments)
 
     executed = []
     for call in output.tool_calls:
@@ -363,11 +368,11 @@ def build_test_cases():
     return cases
 
 
-def evaluate_controls(cases, controls, log=None):
+def evaluate_controls(cases, controls, log=None, model=None):
     rows = []
     log = log if log is not None else AuditLog()
     for case in cases:
-        result = run_pipeline(case["user_request"], case["retrieved"], controls, log=log, case_id=case["case_id"])
+        result = run_pipeline(case["user_request"], case["retrieved"], controls, log=log, case_id=case["case_id"], model=model)
         rows.append({
             "case_id": case["case_id"],
             "kind": case["kind"],
