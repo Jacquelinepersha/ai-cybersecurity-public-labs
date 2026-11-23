@@ -89,11 +89,18 @@ Click any **Open in Colab** badge, then choose **Runtime → Run all**. The firs
 | 30 | [Unsupervised threat hunting](notebooks/30_unsupervised_threat_hunting.ipynb) | Practitioner | none yet | [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Jacquelinepersha/ai-cybersecurity-public-labs/blob/main/notebooks/30_unsupervised_threat_hunting.ipynb) |
 | 31 | [Automated red teaming, CI gates, and real models](notebooks/31_automated_red_teaming_ci_live_models.ipynb) | Expert | none yet | [![Open in Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/Jacquelinepersha/ai-cybersecurity-public-labs/blob/main/notebooks/31_automated_red_teaming_ci_live_models.ipynb) |
 
+**Limits to keep in mind when you quote results:**
+- **One benchmark.** Every detector result comes from UNSW-NB15, so report it as "on one benchmark". Whether these detectors transfer to other networks is the job of Lab 39 (cross-dataset test on CIC-IDS2017), planned in the Advanced unit.
+- **Simulated Unit 5 numbers are illustrative.** Results from the simulated assistant are labeled "illustrative, not measured" in each lab. Lab 23 (Steps 7 and 8) and Lab 25 (Step 6) are the measurements: held-out attacks from a public benchmark, and a real open model.
+- **Evasion is feature-space.** Lab 12 measures sensitivity, not what an attacker could do with real packets. Constrained, realistic attacks are planned in the Advanced unit.
+
 ## How Unit 5 works without an API key
 
 Unit 5 labs use a deterministic, simulated assistant (`src/llm_app.py`) and agent (`src/agent_security.py`). They reproduce a documented failure of real LLMs: they understand instructions written in many phrasings, including ones hidden in retrieved data, and act on them. That makes every result repeatable and free to run. The **controls** you build and measure (filters, trust separation, schema validation, deterministic policy, output filters, logging, approval gates) are real code that could sit in front of a real model. What the simulation cannot tell you is how often a specific production model falls for a specific payload; that needs testing against that model.
 
 Labs 24, 26, 28, and 29 use real UNSW-NB15 traffic and real models. Lab 25 verifies answers against the live ATT&CK release.
+
+**Measured on a real model:** Lab 23 Step 8 and Lab 25 Step 6 run a small open model (Qwen2.5-1.5B-Instruct) on a free Colab T4 GPU, and Lab 23 Step 7 tests the injection filter against 150 held-out attacks from Microsoft's BIPIA benchmark.
 
 **Want to test a real LLM?** Lab 31 connects the same controls to any OpenAI-compatible endpoint, including a free local model through Ollama, by setting `LLM_BASE_URL` and `LLM_MODEL`. It also shows how to run the open-source scanners garak and PyRIT, and how this repository's red-team regression suite (`tests/`) runs automatically on every push through GitHub Actions.
 
