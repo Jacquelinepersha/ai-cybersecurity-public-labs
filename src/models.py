@@ -34,6 +34,14 @@ def xgboost_pipeline(X, random_state=42, scale_pos_weight=1.0):
         from xgboost import XGBClassifier
     except ImportError as exc:
         raise ImportError("Install xgboost with: pip install xgboost") from exc
+    except Exception as exc:  # XGBoostError: the native library failed to load
+        if "libomp" in str(exc) or "OpenMP" in str(exc):
+            raise RuntimeError(
+                "XGBoost is installed but needs the OpenMP runtime, which macOS "
+                "does not include. In Terminal run:  brew install libomp  "
+                "then restart the Jupyter kernel. (No Homebrew? See https://brew.sh)"
+            ) from None
+        raise
 
     return Pipeline([
         ("preprocess", build_preprocessor(X, scale_numeric=False)),

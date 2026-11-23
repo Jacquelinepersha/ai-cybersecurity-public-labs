@@ -1,0 +1,22 @@
+name: Red-team regression
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  redteam:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install minimal dependencies
+        run: pip install pandas numpy scikit-learn pytest
+      - name: Run the red-team regression suite
+        run: pytest -q tests/test_redteam_regression.py
