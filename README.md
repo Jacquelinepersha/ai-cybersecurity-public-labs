@@ -119,6 +119,8 @@ jupyter lab notebooks/
 
 The dataset loads automatically from `data/raw/` (see `data/README.md`).
 
+`requirements.txt` pins the exact library versions every lab was tested with end to end (Python 3.13), so local results reproduce. Colab uses its own preinstalled versions, which can shift results slightly.
+
 **On a Mac**, XGBoost (used only in Lab 05) also needs the OpenMP runtime, which macOS does not include. Install it once with [Homebrew](https://brew.sh): `brew install libomp`, then restart the Jupyter kernel. If you skip this, Lab 05 compares the other two models and continues. Colab needs nothing extra.
 
 ## Repository structure
