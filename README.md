@@ -98,7 +98,7 @@ Click any **Open in Colab** badge, then choose **Runtime → Run all**. The firs
 
 Unit 5 labs use a deterministic, simulated assistant (`src/llm_app.py`) and agent (`src/agent_security.py`). They act on instruction-like text that matches a small set of trigger patterns, including text hidden in retrieved data or alert notes. That mimics a documented failure of real LLMs and makes every result repeatable and free to run, but real models follow a far wider range of phrasings, so results from the simulators are labeled **illustrative, not measured** in each lab. The **controls** you build and measure (filters, trust separation, schema validation, deterministic policy, output filters, logging, approval gates) are real code that could sit in front of a real model. How often a specific model falls for a specific attack needs testing against that model.
 
-Labs 24, 26, 28, and 29 also use real UNSW-NB15 traffic and real trained detectors; each lab marks which of its results are measured and which are illustrative. Lab 25 verifies answers against ATT&CK, pinned to release 20.1 so results do not shift when MITRE publishes a new version.
+Labs 24, 26, 28, and 29 also use real UNSW-NB15 traffic and real trained detectors; each lab marks which of its results are measured and which are illustrative. Lab 25 verifies answers against ATT&CK, pinned to release 20.1, and Lab 19 uses ATLAS pinned to release v1.16.0, so results do not shift when MITRE publishes a new version.
 
 **Measured on a real model:** Lab 23 Step 8 and Lab 25 Step 6 run a small open model (Qwen2.5-1.5B-Instruct) on a free Colab T4 GPU, and Lab 23 Step 7 tests the injection filter against 150 held-out attacks from Microsoft's BIPIA benchmark.
 

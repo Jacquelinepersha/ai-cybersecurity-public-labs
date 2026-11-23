@@ -14,9 +14,11 @@ ATTACK_ENTERPRISE_URL = (
     f"attack-stix-data/master/enterprise-attack/enterprise-attack-{ATTACK_VERSION}.json"
 )
 
+# ATLAS is pinned to a tagged release for the same reason as ATT&CK above.
+ATLAS_VERSION = "v1.16.0"
 ATLAS_STIX_URL = (
     "https://raw.githubusercontent.com/mitre-atlas/"
-    "atlas-navigator-data/main/dist/stix-atlas.json"
+    f"atlas-navigator-data/{ATLAS_VERSION}/dist/stix-atlas.json"
 )
 
 def load_json_url(url, timeout=30):
