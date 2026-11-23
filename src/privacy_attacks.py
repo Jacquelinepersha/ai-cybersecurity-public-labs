@@ -12,8 +12,8 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
-from sklearn.metrics import roc_auc_score
-from sklearn.tree import DecisionTreeClassifier
+from sklearn.metrics import roc_auc_score, roc_curve
+from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 
 from .preprocessing import build_preprocessor
 from sklearn.pipeline import Pipeline
@@ -54,6 +54,11 @@ def extraction_experiment(api, attacker_pool, holdout, budget, random_state=0):
     The attacker samples `budget` rows from public-looking traffic, queries
     the API, and trains a surrogate on the answers. Fidelity is how often the
     surrogate agrees with the target on traffic neither has seen.
+
+    With labels only, the surrogate is a classifier. When the API returns
+    scores, the attacker distills them: a regressor learns the score itself,
+    which carries more information than the label (how close each query was to
+    the boundary), and its prediction is thresholded at 0.5.
     """
     queries = attacker_pool.sample(n=min(budget, len(attacker_pool)), random_state=random_state)
     answers = api.query(queries)
@@ -64,18 +69,20 @@ def extraction_experiment(api, attacker_pool, holdout, budget, random_state=0):
     if len(np.unique(labels)) < 2:
         return {"budget": budget, "answered": len(answers), "fidelity": np.nan}
 
-    surrogate = Pipeline([
-        ("preprocess", build_preprocessor(queries, scale_numeric=False)),
-        ("model", DecisionTreeClassifier(max_depth=12, random_state=random_state)),
-    ])
-    weights = None
-    if api.detail != "label":
-        # confidence tells the attacker which answers are near the boundary
-        weights = 1.0 + np.abs(answers - 0.5) * 2
-    surrogate.fit(queries, labels, model__sample_weight=weights)
+    preprocess = build_preprocessor(queries, scale_numeric=False)
+    if api.detail == "label":
+        surrogate = Pipeline([("preprocess", preprocess),
+                              ("model", DecisionTreeClassifier(max_depth=12, random_state=random_state))])
+        surrogate.fit(queries, labels)
+        copied = surrogate.predict(holdout)
+    else:
+        surrogate = Pipeline([("preprocess", preprocess),
+                              ("model", DecisionTreeRegressor(max_depth=12, random_state=random_state))])
+        surrogate.fit(queries, answers)
+        copied = (surrogate.predict(holdout) >= 0.5).astype(int)
 
     target_labels = (api.model.predict_proba(holdout)[:, 1] >= 0.5).astype(int)
-    fidelity = float((surrogate.predict(holdout) == target_labels).mean())
+    fidelity = float((copied == target_labels).mean())
     return {"budget": budget, "answered": len(answers), "fidelity": fidelity}
 
 
@@ -87,11 +94,7 @@ def membership_scores(model, X, y):
     return proba[np.arange(len(idx)), idx]
 
 
-def membership_inference_auc(model, X_members, y_members, X_outsiders, y_outsiders, detail="full"):
-    """
-    A simple attack: records the model is unusually sure about are guessed
-    to be training members. AUC 0.5 means the attacker learns nothing.
-    """
+def _membership_observations(model, X_members, y_members, X_outsiders, y_outsiders, detail):
     def observe(X, y):
         s = membership_scores(model, X, y)
         if detail == "label":
@@ -102,7 +105,28 @@ def membership_inference_auc(model, X_members, y_members, X_outsiders, y_outside
 
     scores = np.concatenate([observe(X_members, y_members), observe(X_outsiders, y_outsiders)])
     truth = np.concatenate([np.ones(len(X_members)), np.zeros(len(X_outsiders))])
+    return truth, scores
+
+
+def membership_inference_auc(model, X_members, y_members, X_outsiders, y_outsiders, detail="full"):
+    """
+    A simple attack: records the model is unusually sure about are guessed
+    to be training members. AUC 0.5 means the attacker learns nothing.
+    """
+    truth, scores = _membership_observations(model, X_members, y_members, X_outsiders, y_outsiders, detail)
     return float(roc_auc_score(truth, scores))
+
+
+def membership_tpr_at_fpr(model, X_members, y_members, X_outsiders, y_outsiders, detail="full", fpr=0.01):
+    """
+    Share of members the attacker identifies while wrongly flagging at most
+    `fpr` of outsiders. This is the standard way to report membership
+    inference (Carlini et al., IEEE S&P 2022): an attack matters when it can
+    name some members with confidence, which an average-case AUC can hide.
+    """
+    truth, scores = _membership_observations(model, X_members, y_members, X_outsiders, y_outsiders, detail)
+    fprs, tprs, _ = roc_curve(truth, scores)
+    return float(tprs[np.searchsorted(fprs, fpr, side="right") - 1])
 
 
 # ---------------------------------------------------------------------------

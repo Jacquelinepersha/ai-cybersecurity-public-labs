@@ -5,9 +5,13 @@ from urllib.request import Request, urlopen
 
 import pandas as pd
 
+# Pinned to one ATT&CK release so results do not change when MITRE publishes a new
+# version (v20 already renamed tactics, for example "defense-evasion"). To move to a
+# newer release, change ATTACK_VERSION and rerun the labs that use ATT&CK.
+ATTACK_VERSION = "20.1"
 ATTACK_ENTERPRISE_URL = (
     "https://raw.githubusercontent.com/mitre-attack/"
-    "attack-stix-data/master/enterprise-attack/enterprise-attack.json"
+    f"attack-stix-data/master/enterprise-attack/enterprise-attack-{ATTACK_VERSION}.json"
 )
 
 ATLAS_STIX_URL = (

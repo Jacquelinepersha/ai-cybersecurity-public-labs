@@ -179,9 +179,12 @@ def verify_claim(claim, technique_id, truth):
     if kind == "tactic":
         return (True, None) if value in tech["tactics"] else (False, "wrong attribute (tactic)")
     if kind == "group":
+        # ATT&CK records documented links only. A group that is not linked may still
+        # use the technique, so this is "unsupported", not proven false. Either way it
+        # is unverified and must not drive an attribution decision.
         if value not in truth["group_names"]:
             return False, "fabricated entity"
-        return (True, None) if value in truth["uses"].get(technique_id, set()) else (False, "wrong relationship (group)")
+        return (True, None) if value in truth["uses"].get(technique_id, set()) else (False, "group not supported by ATT&CK")
     if kind == "abstention":
         has_groups = bool(truth["uses"].get(technique_id))
         return (False, "unnecessary abstention") if has_groups else (True, None)
@@ -208,7 +211,7 @@ def evaluate_answers(answers, truth):
     return pd.DataFrame(rows)
 
 
-CRITICAL_FAILURES = {"fabricated entity", "wrong relationship (group)", "outdated (retired ID)"}
+CRITICAL_FAILURES = {"fabricated entity", "group not supported by ATT&CK", "outdated (retired ID)"}
 
 
 def rubric(claims):

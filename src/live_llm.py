@@ -42,20 +42,26 @@ def live_config():
 
 
 def parse_model_reply(text):
-    """Extract the JSON object from a model reply; tolerate code fences and chatter."""
+    """
+    Extract the JSON object from a model reply; tolerate code fences and chatter.
+    `json_ok` is False when the reply had no usable JSON: then no tool calls can
+    run, which must not be mistaken for the model resisting an attack.
+    """
+    fallback = {"answer": text.strip(), "tool_calls": [], "json_ok": False}
     match = re.search(r"\{.*\}", text, re.S)
     if not match:
-        return {"answer": text.strip(), "tool_calls": []}
+        return fallback
     try:
         data = json.loads(match.group(0))
     except json.JSONDecodeError:
-        return {"answer": text.strip(), "tool_calls": []}
+        return fallback
     if not isinstance(data, dict):
-        return {"answer": text.strip(), "tool_calls": []}
+        return fallback
     calls = data.get("tool_calls") or []
     return {
         "answer": str(data.get("answer", "")),
         "tool_calls": [c for c in calls if isinstance(c, dict)],
+        "json_ok": True,
     }
 
 
@@ -68,6 +74,7 @@ class LiveModel:
         self.api_key = api_key
         self.timeout = timeout
         self.temperature = temperature
+        self.last_json_ok = None
 
     def _chat(self, messages):
         body = json.dumps({
@@ -97,6 +104,7 @@ class LiveModel:
             {"role": "user", "content": user_request + "\n\nRetrieved intelligence:\n" + "\n".join(context)},
         ]
         reply = parse_model_reply(self._chat(messages))
+        self.last_json_ok = reply["json_ok"]
         provenance = "untrusted" if any_untrusted else "trusted"
         calls = [
             ToolCall(str(c.get("tool", "")), dict(c.get("args") or {}), provenance, raw=json.dumps(c))

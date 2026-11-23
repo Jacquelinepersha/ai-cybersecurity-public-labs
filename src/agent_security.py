@@ -2,7 +2,10 @@
 A simulated SOC triage agent and the policy layer that governs it.
 
 The agent chooses its next step from the evidence (unlike fixed automation,
-which runs the same playbook every time). Planning and authorization are
+which runs the same playbook every time). It is scripted: it follows two
+instruction patterns in alert text ("grant yourself admin", "disable account
+X"), and every injected alert carries the same note. Results show how the
+controls behave, not how a real LLM agent would act. Planning and authorization are
 separate: the agent proposes, a deterministic policy decides, and humans own
 high-impact decisions. All tools are simulated; nothing touches a network.
 """
@@ -132,12 +135,35 @@ class Policy:
         return "allow", "low risk"
 
 
-def human_review(step: Step, alert: Alert):
-    """Simulated analyst: approves containment only for real attacks."""
+def perfect_reviewer(step: Step, alert: Alert):
+    """An analyst who is never wrong: approves containment only for real attacks.
+    Unrealistic on purpose: it shows the best case a human gate can give."""
     return alert.is_attack
 
 
-def run_agent(alerts, mode="policy_gated", policy=None):
+def rubber_stamp_reviewer(step: Step, alert: Alert):
+    """An analyst who approves whatever the agent proposes (automation bias,
+    alert fatigue, or approvals clicked through at 3 a.m.)."""
+    return True
+
+
+def noisy_reviewer(error_rate=0.1, seed=0):
+    """An analyst who gets a share of decisions wrong, in both directions.
+    `error_rate` is an assumption to vary, not a measured value."""
+    rng = np.random.default_rng(seed)
+
+    def review(step: Step, alert: Alert):
+        correct = alert.is_attack
+        return (not correct) if rng.random() < error_rate else correct
+
+    return review
+
+
+# Backwards-compatible name used by earlier versions of this module.
+human_review = perfect_reviewer
+
+
+def run_agent(alerts, mode="policy_gated", policy=None, reviewer=None):
     """
     Run every alert through one operating mode.
 
@@ -145,8 +171,11 @@ def run_agent(alerts, mode="policy_gated", policy=None):
       unsafe_autonomy   agent proposals execute directly
       fixed_automation  static playbook executes directly
       policy_gated      agent proposes, policy decides, humans approve
+
+    reviewer decides containment approvals; defaults to perfect_reviewer.
     """
     policy = policy or Policy()
+    reviewer = reviewer or perfect_reviewer
     log = []
     for alert in alerts:
         steps = fixed_automation_plan(alert) if mode == "fixed_automation" else SOCAgent().plan(alert)
@@ -155,7 +184,7 @@ def run_agent(alerts, mode="policy_gated", policy=None):
                 decision, reason = policy.decide(step, alert)
                 approved = None
                 if decision == "needs_approval":
-                    approved = human_review(step, alert)
+                    approved = reviewer(step, alert)
                     executed = approved
                 else:
                     executed = decision == "allow"
