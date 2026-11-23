@@ -11,16 +11,29 @@ def permutation_importance_frame(
     random_state=42,
     max_samples=0.25,
 ):
-    result = permutation_importance(
-        estimator,
-        X,
-        y,
-        scoring=scoring,
-        n_repeats=n_repeats,
-        random_state=random_state,
-        n_jobs=-1,
-        max_samples=max_samples,
-    )
+    # Parallelize only the outer loop. If the model also asks for every core
+    # (n_jobs=-1), the two levels of parallelism fight over the CPUs and
+    # scikit-learn floods the output with warnings. Restore it afterwards.
+    nested = {
+        name: value for name, value in estimator.get_params().items()
+        if name.endswith("n_jobs") and value not in (None, 1)
+    }
+    if nested:
+        estimator.set_params(**{name: 1 for name in nested})
+    try:
+        result = permutation_importance(
+            estimator,
+            X,
+            y,
+            scoring=scoring,
+            n_repeats=n_repeats,
+            random_state=random_state,
+            n_jobs=-1,
+            max_samples=max_samples,
+        )
+    finally:
+        if nested:
+            estimator.set_params(**nested)
 
     frame = pd.DataFrame({
         "feature": X.columns,
